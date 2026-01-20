@@ -1,0 +1,32 @@
+%{ if length(countservers) > 0 }
+[webservers]
+%{ for vm in countservers ~}
+${vm.name} ansible_host=${vm.ip} fqdn=${vm.fqdn}
+%{ endfor }
+%{ endif }
+
+%{ if length(foreachservers) > 0 }
+[databases]
+%{ for vm in foreachservers ~}
+${vm.name} ansible_host=${vm.ip} fqdn=${vm.fqdn}
+%{ endfor }
+%{ endif }
+
+%{ if length(storageserver) > 0 }
+[storage]
+%{ for vm in storageserver ~}
+${vm.name} ansible_host=${vm.ip} fqdn=${vm.fqdn}
+%{ endfor }
+%{ endif }
+
+%{ if length(countservers) > 0 && length(foreachservers) > 0 && length(storageserver) > 0 }
+[all:children]
+countservers
+foreachservers
+storageserver
+%{ endif }
+
+[webservers]
+%{~ for i in countservers ~}
+${i["name"]} ansible_host=${i["network_interface"][0]["nat_ip_address"]} platform_id=${i["platform_id"]}
+%{~ endfor ~}
